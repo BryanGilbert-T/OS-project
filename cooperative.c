@@ -3,7 +3,7 @@
 #include "cooperative.h"
 
 /*
- * [TODO]
+ * [TODONE]
  * declare the static globals here using
  *        __data __at (address) type name; syntax
  * manually allocate the addresses of these variables, for
@@ -13,9 +13,19 @@
  *   maybe also a count, but strictly speaking not necessary
  * - plus any temporaries that you need.
  */
+__data __at (0x20) unsigned char savedSP[MAXTHREADS];
+__data __at (0x24) ThreadID currentThread;
+__data __at (0x25) unsigned char threadMask;
+__data __at (0x26) ThreadID candidateThread;
+__data __at (0x27) unsigned char candidateMask;
+__data __at (0x28) unsigned char previousSP;
+__data __at (0x29) unsigned char zeroValue;
+__data __at (0x2A) unsigned char newThreadPSW;
+__data __at (0x2B) unsigned char savedFpLow;
+__data __at (0x2C) unsigned char savedFpHigh;
 
 /*
- * [TODO]
+ * [TODONE]
  * define a macro for saving the context of the current thread by
  * 1) push ACC, B register, Data pointer registers (DPL, DPH), PSW
  * 2) save SP into the saved Stack Pointers array
@@ -23,15 +33,20 @@
  * Note that 1) should be written in assembly,
  *     while 2) can be written in either assembly or C
  */
-#define SAVESTATE               \
-    {                           \
-        __asm                   \
-        /*your code here*/      \
-        __endasm;               \
+#define SAVESTATE                           \
+    {                                       \
+        __asm                               \
+            push acc                        \
+            push b                          \
+            push dpl                        \
+            push psw                        \
+            push dph                        \
+        __endasm;                           \
+        savedSP[currentThread] = SP;        \
     }
 
 /*
- * [TODO]
+ * [TODONE]
  * define a macro for restoring the context of the current thread by
  * essentially doing the reverse of SAVESTATE:
  * 1) assign SP to the saved SP from the saved stack pointer array
@@ -39,11 +54,16 @@
  * Again, popping must be done in assembly but restoring SP can be
  * done in either C or assembly.
  */
-#define RESTORESTATE            \
-    {                           \
-        __asm                   \
-        /*your code here*/      \
-        __endasm;               \
+#define RESTORESTATE                        \
+    {                                       \
+        SP = savedSP[currentThread];        \
+        __asm                               \
+            pop psw                         \
+            pop dph                         \
+            pop dpl                         \
+            pop b                           \
+            pop acc                         \
+        __endasm;                           \
     }
 
 /*
@@ -61,17 +81,20 @@ extern void main(void);
 void Bootstrap(void)
 {
     /*
-     * [TODO]
+     * [TODONE]
      * initialize data structures for threads (e.g., mask)
      *
      * optional: move the stack pointer to some known location
      * only during bootstrapping. by default, SP is 0x07.
      *
-     * [TODO]
+     * [TODONE]
      *     create a thread for main; be sure current thread is
      *     set to this thread ID, and restore its context,
      *     so that it starts running main().
      */
+    threadMask = 0x00;
+    currentThread = ThreadCreate(main);
+    RESTORESTATE;
 }
 
 /*
@@ -83,16 +106,16 @@ void Bootstrap(void)
 ThreadID ThreadCreate(FunctionPtr fp)
 {
     /*
-     * [TODO]
+     * [TODONE]
      * check to see we have not reached the max #threads.
      * if so, return -1, which is not a valid thread ID.
      */
     /*
-     * [TODO]
+     * [TODONE]
      *     otherwise, find a thread ID that is not in use,
      *     and grab it. (can check the bit mask for threads),
      *
-     * [TODO] below
+     * [TODONE] below
      * a. update the bit mask
          (and increment thread count, if you use a thread count,
           but it is optional)
@@ -126,6 +149,62 @@ ThreadID ThreadCreate(FunctionPtr fp)
        h. set SP to the saved SP in step c.
        i. finally, return the newly created thread ID.
      */
+    __asm
+        mov _savedFpLow, dpl
+        mov _savedFpHigh, dph
+    __endasm;
+
+    candidateThread = 0;
+    candidateMask = 0x01;
+
+    while (candidateThread < MAXTHREADS)
+    {
+        if ((threadMask & candidateMask) == 0)
+        {
+            break;
+        }
+        candidateThread++;
+        candidateMask <<= 1;
+    }
+
+    if (candidateThread == MAXTHREADS)
+    {
+        return -1;
+    }
+
+    threadMask |= candidateMask;
+
+    /* Prepare values before moving SP to the new thread's stack. */
+    zeroValue = 0x00;
+    newThreadPSW = candidateThread << 3;  /* bank 0, 1, 2, or 3 */
+    previousSP = SP;
+
+    /*
+     * Each thread owns a 16-byte stack:
+     * thread 0: 0x40-0x4F, thread 1: 0x50-0x5F, etc.
+     * PUSH increments SP first, so start one byte before the stack area.
+     */
+    SP = 0x3F + (candidateThread << 4);
+
+    /*
+     * Fake the stack as if this thread had been called normally.
+     * LCALL stores low byte first, then high byte, so we push low then high.
+     */
+    __asm
+        push _savedFpLow
+        push _savedFpHigh
+
+        push _zeroValue      ; 
+        push _zeroValue      ; 
+        push _zeroValue      ; 
+        push _zeroValue      ; 
+        push _newThreadPSW   ; 
+    __endasm;
+
+    savedSP[candidateThread] = SP;
+    SP = previousSP;
+
+    return candidateThread;
 }
 
 /*
@@ -141,7 +220,7 @@ void ThreadYield(void)
     do
     {
         /*
-         * [TODO]
+         * [TODONE]
          * do round-robin policy for now.
          * find the next thread that can run and
          * set the current thread ID to it,
@@ -150,6 +229,33 @@ void ThreadYield(void)
          * there should be at least one thread, so this loop
          * will always terminate.
          */
+        currentThread++;
+        if (currentThread >= MAXTHREADS)
+        {
+            currentThread = 0;
+        }
+
+        if (currentThread == 0)
+        {
+            candidateMask = 0x01;
+        }
+        else if (currentThread == 1)
+        {
+            candidateMask = 0x02;
+        }
+        else if (currentThread == 2)
+        {
+            candidateMask = 0x04;
+        }
+        else
+        {
+            candidateMask = 0x08;
+        }
+
+        if (threadMask & candidateMask)
+        {
+            break;
+        }
     } while (1);
     RESTORESTATE;
 }
@@ -167,5 +273,61 @@ void ThreadExit(void)
      * and set current thread to another valid ID.
      * Q: What happens if there are no more valid threads?
      */
+    if (currentThread == 0)
+    {
+        threadMask &= 0xFE;
+    }
+    else if (currentThread == 1)
+    {
+        threadMask &= 0xFD;
+    }
+    else if (currentThread == 2)
+    {
+        threadMask &= 0xFB;
+    }
+    else
+    {
+        threadMask &= 0xF7;
+    }
+
+    if (threadMask == 0)
+    {
+        while (1)
+        {
+            /* No runnable thread remains. */
+        }
+    }
+
+    do
+    {
+        currentThread++;
+        if (currentThread >= MAXTHREADS)
+        {
+            currentThread = 0;
+        }
+
+        if (currentThread == 0)
+        {
+            candidateMask = 0x01;
+        }
+        else if (currentThread == 1)
+        {
+            candidateMask = 0x02;
+        }
+        else if (currentThread == 2)
+        {
+            candidateMask = 0x04;
+        }
+        else
+        {
+            candidateMask = 0x08;
+        }
+
+        if (threadMask & candidateMask)
+        {
+            break;
+        }
+    } while (1);
+
     RESTORESTATE;
 }
