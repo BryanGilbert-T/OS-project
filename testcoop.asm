@@ -113,6 +113,7 @@
 	.globl _DPL
 	.globl _SP
 	.globl _P0
+	.globl _nextChar
 	.globl _bufferFull
 	.globl _sharedChar
 ;--------------------------------------------------------
@@ -232,6 +233,7 @@ _CY	=	0x00d7
 	.area DSEG    (DATA)
 _sharedChar	=	0x0030
 _bufferFull	=	0x0031
+_nextChar	=	0x0032
 ;--------------------------------------------------------
 ; overlayable items in internal ram
 ;--------------------------------------------------------
@@ -375,9 +377,7 @@ __sdcc_program_startup:
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'Producer'
 ;------------------------------------------------------------
-;nextChar      Allocated to registers r7 
-;------------------------------------------------------------
-;	testcoop.c:24: void Producer(void)
+;	testcoop.c:25: void Producer(void)
 ;	-----------------------------------------
 ;	 function Producer
 ;	-----------------------------------------
@@ -391,106 +391,116 @@ _Producer:
 	ar1 = 0x01
 	ar0 = 0x00
 ;	testcoop.c:32: nextChar = 'A';
-	mov	r7,#0x41
+	mov	_nextChar,#0x41
 ;	testcoop.c:39: while (bufferFull)
 00101$:
 	mov	a,_bufferFull
 	jz	00103$
 ;	testcoop.c:41: ThreadYield();
-	push	ar7
 	lcall	_ThreadYield
-	pop	ar7
 	sjmp	00101$
 00103$:
 ;	testcoop.c:44: sharedChar = nextChar;
-	mov	_sharedChar,r7
+	mov	_sharedChar,_nextChar
 ;	testcoop.c:45: bufferFull = 1;
 	mov	_bufferFull,#0x01
 ;	testcoop.c:47: nextChar++;
-	inc	r7
+	mov	a,_nextChar
+	inc	a
+	mov	_nextChar,a
 ;	testcoop.c:48: if (nextChar > 'Z')
-	mov	a,r7
+	mov	a,_nextChar
 	add	a,#0xff - 0x5a
-	jnc	00101$
+	jnc	00105$
 ;	testcoop.c:50: nextChar = 'A';
-	mov	r7,#0x41
-;	testcoop.c:53: }
+	mov	_nextChar,#0x41
+00105$:
+;	testcoop.c:53: ThreadYield();
+	lcall	_ThreadYield
+;	testcoop.c:55: }
 	sjmp	00101$
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'Consumer'
 ;------------------------------------------------------------
-;	testcoop.c:60: void Consumer(void)
+;	testcoop.c:62: void Consumer(void)
 ;	-----------------------------------------
 ;	 function Consumer
 ;	-----------------------------------------
 _Consumer:
-;	testcoop.c:66: TMOD = 0x20;      
+;	testcoop.c:68: TMOD = 0x20;
 	mov	_TMOD,#0x20
-;	testcoop.c:67: TH1 = 0xFA;       
+;	testcoop.c:69: TH1 = 0xFA;
 	mov	_TH1,#0xfa
-;	testcoop.c:68: SCON = 0x50;      
+;	testcoop.c:70: TL1 = 0xFA;
+	mov	_TL1,#0xfa
+;	testcoop.c:71: SCON = 0x50;
 	mov	_SCON,#0x50
-;	testcoop.c:69: TR1 = 1;          
+;	testcoop.c:72: TR1 = 1;
 ;	assignBit
 	setb	_TR1
-;	testcoop.c:70: TI = 1;           
+;	testcoop.c:73: TI = 1;
 ;	assignBit
 	setb	_TI
-;	testcoop.c:78: while (bufferFull)
+;	testcoop.c:81: while (!bufferFull)
 00101$:
 	mov	a,_bufferFull
-	jz	00103$
-;	testcoop.c:80: ThreadYield();
+	jnz	00103$
+;	testcoop.c:83: ThreadYield();
 	lcall	_ThreadYield
 	sjmp	00101$
 00103$:
-;	testcoop.c:89: SBUF = sharedChar;
+;	testcoop.c:92: TI = 0;
+;	assignBit
+	clr	_TI
+;	testcoop.c:93: SBUF = sharedChar;
 	mov	_SBUF,_sharedChar
-;	testcoop.c:90: while (TI == 0){
+;	testcoop.c:94: while (TI == 0){
 00104$:
-;	testcoop.c:93: TI = 0;
+;	testcoop.c:97: TI = 0;
 ;	assignBit
 	jbc	_TI,00137$
 	sjmp	00104$
 00137$:
-;	testcoop.c:94: bufferFull = 0;
+;	testcoop.c:98: bufferFull = 0;
 	mov	_bufferFull,#0x00
-;	testcoop.c:96: }
+;	testcoop.c:100: ThreadYield();
+	lcall	_ThreadYield
+;	testcoop.c:102: }
 	sjmp	00101$
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'main'
 ;------------------------------------------------------------
-;	testcoop.c:103: void main(void)
+;	testcoop.c:109: void main(void)
 ;	-----------------------------------------
 ;	 function main
 ;	-----------------------------------------
 _main:
-;	testcoop.c:109: sharedChar = 0;
-	mov	_sharedChar,#0x00
-;	testcoop.c:110: bufferFull = 0;
+;	testcoop.c:115: sharedChar = ' ';
+	mov	_sharedChar,#0x20
+;	testcoop.c:116: bufferFull = 0;
 	mov	_bufferFull,#0x00
-;	testcoop.c:119: ThreadCreate(Producer);
+;	testcoop.c:125: ThreadCreate(Producer);
 	mov	dptr,#_Producer
 	lcall	_ThreadCreate
-;	testcoop.c:120: Consumer();
-;	testcoop.c:121: }
+;	testcoop.c:126: Consumer();
+;	testcoop.c:127: }
 	ljmp	_Consumer
 ;------------------------------------------------------------
 ;Allocation info for local variables in function '_sdcc_gsinit_startup'
 ;------------------------------------------------------------
-;	testcoop.c:123: void _sdcc_gsinit_startup(void)
+;	testcoop.c:129: void _sdcc_gsinit_startup(void)
 ;	-----------------------------------------
 ;	 function _sdcc_gsinit_startup
 ;	-----------------------------------------
 __sdcc_gsinit_startup:
-;	testcoop.c:127: __endasm;
+;	testcoop.c:133: __endasm;
 	LJMP	_Bootstrap
-;	testcoop.c:128: }
+;	testcoop.c:134: }
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function '_mcs51_genRAMCLEAR'
 ;------------------------------------------------------------
-;	testcoop.c:130: void _mcs51_genRAMCLEAR(void) {}
+;	testcoop.c:136: void _mcs51_genRAMCLEAR(void) {}
 ;	-----------------------------------------
 ;	 function _mcs51_genRAMCLEAR
 ;	-----------------------------------------
@@ -499,7 +509,7 @@ __mcs51_genRAMCLEAR:
 ;------------------------------------------------------------
 ;Allocation info for local variables in function '_mcs51_genXINIT'
 ;------------------------------------------------------------
-;	testcoop.c:131: void _mcs51_genXINIT(void) {}
+;	testcoop.c:137: void _mcs51_genXINIT(void) {}
 ;	-----------------------------------------
 ;	 function _mcs51_genXINIT
 ;	-----------------------------------------
@@ -508,7 +518,7 @@ __mcs51_genXINIT:
 ;------------------------------------------------------------
 ;Allocation info for local variables in function '_mcs51_genXRAMCLEAR'
 ;------------------------------------------------------------
-;	testcoop.c:132: void _mcs51_genXRAMCLEAR(void) {}
+;	testcoop.c:138: void _mcs51_genXRAMCLEAR(void) {}
 ;	-----------------------------------------
 ;	 function _mcs51_genXRAMCLEAR
 ;	-----------------------------------------

@@ -15,6 +15,7 @@
  */
 __data __at (0x30) char sharedChar;
 __data __at (0x31) char bufferFull;
+__data __at (0x32) char nextChar;
 
 /* [TODONE for this function]
  * the producer in this test program generates one characters at a
@@ -28,7 +29,6 @@ void Producer(void)
      * initialize producer data structure, and then enter
      * an infinite loop (does not return)
      */
-    char nextChar;
     nextChar = 'A';
 
     while (1)
@@ -49,6 +49,8 @@ void Producer(void)
         {
             nextChar = 'A';
         }
+
+        ThreadYield();
     }
 }
 
@@ -63,11 +65,12 @@ void Consumer(void)
      * [TODONE]
      * initialize Tx for polling
      */
-    TMOD = 0x20;      
-    TH1 = 0xFA;       
-    SCON = 0x50;      
-    TR1 = 1;          
-    TI = 1;           
+    TMOD = 0x20;
+    TH1 = 0xFA;
+    TL1 = 0xFA;
+    SCON = 0x50;
+    TR1 = 1;
+    TI = 1;
 
     while (1)
     {
@@ -75,7 +78,7 @@ void Consumer(void)
          * [TODONE]
          * wait for new data from producer
          */
-        while (bufferFull)
+        while (!bufferFull)
         {
             ThreadYield();
         }
@@ -86,12 +89,15 @@ void Consumer(void)
          * poll for Tx to finish writing (TI),
          * then clear the flag
          */
+        TI = 0;
         SBUF = sharedChar;
         while (TI == 0){
             // Exhaust TI
         }
         TI = 0;
         bufferFull = 0;
+
+        ThreadYield();
     }
 }
 
@@ -106,7 +112,7 @@ void main(void)
      * [TODONE]
      * initialize globals
      */
-    sharedChar = 0;
+    sharedChar = ' ';
     bufferFull = 0;
 
     

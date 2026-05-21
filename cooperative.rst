@@ -310,7 +310,7 @@
                                     310 ;	-----------------------------------------
                                     311 ;	 function Bootstrap
                                     312 ;	-----------------------------------------
-      0000A6                        313 _Bootstrap:
+      0000B5                        313 _Bootstrap:
                            000007   314 	ar7 = 0x07
                            000006   315 	ar6 = 0x06
                            000005   316 	ar5 = 0x05
@@ -320,23 +320,23 @@
                            000001   320 	ar1 = 0x01
                            000000   321 	ar0 = 0x00
                                     322 ;	cooperative.c:95: threadMask = 0x00;
-      0000A6 75 25 00         [24]  323 	mov	_threadMask,#0x00
+      0000B5 75 25 00         [24]  323 	mov	_threadMask,#0x00
                                     324 ;	cooperative.c:96: currentThread = ThreadCreate(main);
-      0000A9 90 00 90         [24]  325 	mov	dptr,#_main
-      0000AC 12 00 C4         [24]  326 	lcall	_ThreadCreate
-      0000AF 85 82 24         [24]  327 	mov	_currentThread,dpl
+      0000B8 90 00 9F         [24]  325 	mov	dptr,#_main
+      0000BB 12 00 D3         [24]  326 	lcall	_ThreadCreate
+      0000BE 85 82 24         [24]  327 	mov	_currentThread,dpl
                                     328 ;	cooperative.c:97: RESTORESTATE;
-      0000B2 E5 24            [12]  329 	mov	a,_currentThread
-      0000B4 24 20            [12]  330 	add	a, #_savedSP
-      0000B6 F9               [12]  331 	mov	r1,a
-      0000B7 87 81            [24]  332 	mov	_SP,@r1
-      0000B9 D0 D0            [24]  333 	pop psw 
-      0000BB D0 83            [24]  334 	pop dph 
-      0000BD D0 82            [24]  335 	pop dpl 
-      0000BF D0 F0            [24]  336 	pop b 
-      0000C1 D0 E0            [24]  337 	pop acc 
+      0000C1 E5 24            [12]  329 	mov	a,_currentThread
+      0000C3 24 20            [12]  330 	add	a, #_savedSP
+      0000C5 F9               [12]  331 	mov	r1,a
+      0000C6 87 81            [24]  332 	mov	_SP,@r1
+      0000C8 D0 D0            [24]  333 	pop psw 
+      0000CA D0 83            [24]  334 	pop dph 
+      0000CC D0 82            [24]  335 	pop dpl 
+      0000CE D0 F0            [24]  336 	pop b 
+      0000D0 D0 E0            [24]  337 	pop acc 
                                     338 ;	cooperative.c:98: }
-      0000C3 22               [24]  339 	ret
+      0000D2 22               [24]  339 	ret
                                     340 ;------------------------------------------------------------
                                     341 ;Allocation info for local variables in function 'ThreadCreate'
                                     342 ;------------------------------------------------------------
@@ -346,79 +346,79 @@
                                     346 ;	-----------------------------------------
                                     347 ;	 function ThreadCreate
                                     348 ;	-----------------------------------------
-      0000C4                        349 _ThreadCreate:
+      0000D3                        349 _ThreadCreate:
                                     350 ;	cooperative.c:155: __endasm;
-      0000C4 85 82 2B         [24]  351 	mov	_savedFpLow, dpl
-      0000C7 85 83 2C         [24]  352 	mov	_savedFpHigh, dph
+      0000D3 85 82 2B         [24]  351 	mov	_savedFpLow, dpl
+      0000D6 85 83 2C         [24]  352 	mov	_savedFpHigh, dph
                                     353 ;	cooperative.c:157: candidateThread = 0;
-      0000CA 75 26 00         [24]  354 	mov	_candidateThread,#0x00
+      0000D9 75 26 00         [24]  354 	mov	_candidateThread,#0x00
                                     355 ;	cooperative.c:158: candidateMask = 0x01;
-      0000CD 75 27 01         [24]  356 	mov	_candidateMask,#0x01
+      0000DC 75 27 01         [24]  356 	mov	_candidateMask,#0x01
                                     357 ;	cooperative.c:160: while (candidateThread < MAXTHREADS)
-      0000D0                        358 00103$:
-      0000D0 74 FC            [12]  359 	mov	a,#0x100 - 0x04
-      0000D2 25 26            [12]  360 	add	a,_candidateThread
-      0000D4 40 13            [24]  361 	jc	00105$
+      0000DF                        358 00103$:
+      0000DF 74 FC            [12]  359 	mov	a,#0x100 - 0x04
+      0000E1 25 26            [12]  360 	add	a,_candidateThread
+      0000E3 40 13            [24]  361 	jc	00105$
                                     362 ;	cooperative.c:162: if ((threadMask & candidateMask) == 0)
-      0000D6 E5 27            [12]  363 	mov	a,_candidateMask
-      0000D8 55 25            [12]  364 	anl	a,_threadMask
-      0000DA 60 0D            [24]  365 	jz	00105$
+      0000E5 E5 27            [12]  363 	mov	a,_candidateMask
+      0000E7 55 25            [12]  364 	anl	a,_threadMask
+      0000E9 60 0D            [24]  365 	jz	00105$
                                     366 ;	cooperative.c:166: candidateThread++;
-      0000DC E5 26            [12]  367 	mov	a,_candidateThread
-      0000DE 04               [12]  368 	inc	a
-      0000DF F5 26            [12]  369 	mov	_candidateThread,a
+      0000EB E5 26            [12]  367 	mov	a,_candidateThread
+      0000ED 04               [12]  368 	inc	a
+      0000EE F5 26            [12]  369 	mov	_candidateThread,a
                                     370 ;	cooperative.c:167: candidateMask <<= 1;
-      0000E1 E5 27            [12]  371 	mov	a,_candidateMask
-      0000E3 25 E0            [12]  372 	add	a,acc
-      0000E5 F5 27            [12]  373 	mov	_candidateMask,a
-      0000E7 80 E7            [24]  374 	sjmp	00103$
-      0000E9                        375 00105$:
+      0000F0 E5 27            [12]  371 	mov	a,_candidateMask
+      0000F2 25 E0            [12]  372 	add	a,acc
+      0000F4 F5 27            [12]  373 	mov	_candidateMask,a
+      0000F6 80 E7            [24]  374 	sjmp	00103$
+      0000F8                        375 00105$:
                                     376 ;	cooperative.c:170: if (candidateThread == MAXTHREADS)
-      0000E9 74 04            [12]  377 	mov	a,#0x04
-      0000EB B5 26 04         [24]  378 	cjne	a,_candidateThread,00107$
+      0000F8 74 04            [12]  377 	mov	a,#0x04
+      0000FA B5 26 04         [24]  378 	cjne	a,_candidateThread,00107$
                                     379 ;	cooperative.c:172: return -1;
-      0000EE 75 82 FF         [24]  380 	mov	dpl, #0xff
-      0000F1 22               [24]  381 	ret
-      0000F2                        382 00107$:
+      0000FD 75 82 FF         [24]  380 	mov	dpl, #0xff
+      000100 22               [24]  381 	ret
+      000101                        382 00107$:
                                     383 ;	cooperative.c:175: threadMask |= candidateMask;
-      0000F2 E5 27            [12]  384 	mov	a,_candidateMask
-      0000F4 42 25            [12]  385 	orl	_threadMask,a
+      000101 E5 27            [12]  384 	mov	a,_candidateMask
+      000103 42 25            [12]  385 	orl	_threadMask,a
                                     386 ;	cooperative.c:178: zeroValue = 0x00;
-      0000F6 75 29 00         [24]  387 	mov	_zeroValue,#0x00
+      000105 75 29 00         [24]  387 	mov	_zeroValue,#0x00
                                     388 ;	cooperative.c:179: newThreadPSW = candidateThread << 3;  /* bank 0, 1, 2, or 3 */
-      0000F9 E5 26            [12]  389 	mov	a,_candidateThread
-      0000FB C4               [12]  390 	swap	a
-      0000FC 03               [12]  391 	rr	a
-      0000FD 54 F8            [12]  392 	anl	a,#0xf8
-      0000FF F5 2A            [12]  393 	mov	_newThreadPSW,a
+      000108 E5 26            [12]  389 	mov	a,_candidateThread
+      00010A C4               [12]  390 	swap	a
+      00010B 03               [12]  391 	rr	a
+      00010C 54 F8            [12]  392 	anl	a,#0xf8
+      00010E F5 2A            [12]  393 	mov	_newThreadPSW,a
                                     394 ;	cooperative.c:180: previousSP = SP;
-      000101 85 81 28         [24]  395 	mov	_previousSP,_SP
+      000110 85 81 28         [24]  395 	mov	_previousSP,_SP
                                     396 ;	cooperative.c:187: SP = 0x3F + (candidateThread << 4);
-      000104 E5 26            [12]  397 	mov	a,_candidateThread
-      000106 C4               [12]  398 	swap	a
-      000107 54 F0            [12]  399 	anl	a,#0xf0
-      000109 FF               [12]  400 	mov	r7,a
-      00010A 24 3F            [12]  401 	add	a,#0x3f
-      00010C F5 81            [12]  402 	mov	_SP,a
+      000113 E5 26            [12]  397 	mov	a,_candidateThread
+      000115 C4               [12]  398 	swap	a
+      000116 54 F0            [12]  399 	anl	a,#0xf0
+      000118 FF               [12]  400 	mov	r7,a
+      000119 24 3F            [12]  401 	add	a,#0x3f
+      00011B F5 81            [12]  402 	mov	_SP,a
                                     403 ;	cooperative.c:202: __endasm;
-      00010E C0 2B            [24]  404 	push	_savedFpLow
-      000110 C0 2C            [24]  405 	push	_savedFpHigh
-      000112 C0 29            [24]  406 	push	_zeroValue ;
-      000114 C0 29            [24]  407 	push	_zeroValue ;
-      000116 C0 29            [24]  408 	push	_zeroValue ;
-      000118 C0 29            [24]  409 	push	_zeroValue ;
-      00011A C0 2A            [24]  410 	push	_newThreadPSW ;
+      00011D C0 2B            [24]  404 	push	_savedFpLow
+      00011F C0 2C            [24]  405 	push	_savedFpHigh
+      000121 C0 29            [24]  406 	push	_zeroValue ;
+      000123 C0 29            [24]  407 	push	_zeroValue ;
+      000125 C0 29            [24]  408 	push	_zeroValue ;
+      000127 C0 29            [24]  409 	push	_zeroValue ;
+      000129 C0 2A            [24]  410 	push	_newThreadPSW ;
                                     411 ;	cooperative.c:204: savedSP[candidateThread] = SP;
-      00011C E5 26            [12]  412 	mov	a,_candidateThread
-      00011E 24 20            [12]  413 	add	a, #_savedSP
-      000120 F8               [12]  414 	mov	r0,a
-      000121 A6 81            [24]  415 	mov	@r0,_SP
+      00012B E5 26            [12]  412 	mov	a,_candidateThread
+      00012D 24 20            [12]  413 	add	a, #_savedSP
+      00012F F8               [12]  414 	mov	r0,a
+      000130 A6 81            [24]  415 	mov	@r0,_SP
                                     416 ;	cooperative.c:205: SP = previousSP;
-      000123 85 28 81         [24]  417 	mov	_SP,_previousSP
+      000132 85 28 81         [24]  417 	mov	_SP,_previousSP
                                     418 ;	cooperative.c:207: return candidateThread;
-      000126 85 26 82         [24]  419 	mov	dpl, _candidateThread
+      000135 85 26 82         [24]  419 	mov	dpl, _candidateThread
                                     420 ;	cooperative.c:208: }
-      000129 22               [24]  421 	ret
+      000138 22               [24]  421 	ret
                                     422 ;------------------------------------------------------------
                                     423 ;Allocation info for local variables in function 'ThreadYield'
                                     424 ;------------------------------------------------------------
@@ -426,70 +426,70 @@
                                     426 ;	-----------------------------------------
                                     427 ;	 function ThreadYield
                                     428 ;	-----------------------------------------
-      00012A                        429 _ThreadYield:
+      000139                        429 _ThreadYield:
                                     430 ;	cooperative.c:219: SAVESTATE;
-      00012A C0 E0            [24]  431 	push acc 
-      00012C C0 F0            [24]  432 	push b 
-      00012E C0 82            [24]  433 	push dpl 
-      000130 C0 D0            [24]  434 	push psw 
-      000132 C0 83            [24]  435 	push dph 
-      000134 E5 24            [12]  436 	mov	a,_currentThread
-      000136 24 20            [12]  437 	add	a, #_savedSP
-      000138 F8               [12]  438 	mov	r0,a
-      000139 A6 81            [24]  439 	mov	@r0,_SP
+      000139 C0 E0            [24]  431 	push acc 
+      00013B C0 F0            [24]  432 	push b 
+      00013D C0 82            [24]  433 	push dpl 
+      00013F C0 D0            [24]  434 	push psw 
+      000141 C0 83            [24]  435 	push dph 
+      000143 E5 24            [12]  436 	mov	a,_currentThread
+      000145 24 20            [12]  437 	add	a, #_savedSP
+      000147 F8               [12]  438 	mov	r0,a
+      000148 A6 81            [24]  439 	mov	@r0,_SP
                                     440 ;	cooperative.c:220: do
-      00013B                        441 00114$:
+      00014A                        441 00114$:
                                     442 ;	cooperative.c:232: currentThread++;
-      00013B E5 24            [12]  443 	mov	a,_currentThread
-      00013D 04               [12]  444 	inc	a
-      00013E F5 24            [12]  445 	mov	_currentThread,a
+      00014A E5 24            [12]  443 	mov	a,_currentThread
+      00014C 04               [12]  444 	inc	a
+      00014D F5 24            [12]  445 	mov	_currentThread,a
                                     446 ;	cooperative.c:233: if (currentThread >= MAXTHREADS)
-      000140 74 FC            [12]  447 	mov	a,#0x100 - 0x04
-      000142 25 24            [12]  448 	add	a,_currentThread
-      000144 50 03            [24]  449 	jnc	00102$
+      00014F 74 FC            [12]  447 	mov	a,#0x100 - 0x04
+      000151 25 24            [12]  448 	add	a,_currentThread
+      000153 50 03            [24]  449 	jnc	00102$
                                     450 ;	cooperative.c:235: currentThread = 0;
-      000146 75 24 00         [24]  451 	mov	_currentThread,#0x00
-      000149                        452 00102$:
+      000155 75 24 00         [24]  451 	mov	_currentThread,#0x00
+      000158                        452 00102$:
                                     453 ;	cooperative.c:238: if (currentThread == 0)
-      000149 E5 24            [12]  454 	mov	a,_currentThread
-      00014B 70 05            [24]  455 	jnz	00110$
+      000158 E5 24            [12]  454 	mov	a,_currentThread
+      00015A 70 05            [24]  455 	jnz	00110$
                                     456 ;	cooperative.c:240: candidateMask = 0x01;
-      00014D 75 27 01         [24]  457 	mov	_candidateMask,#0x01
-      000150 80 17            [24]  458 	sjmp	00111$
-      000152                        459 00110$:
+      00015C 75 27 01         [24]  457 	mov	_candidateMask,#0x01
+      00015F 80 17            [24]  458 	sjmp	00111$
+      000161                        459 00110$:
                                     460 ;	cooperative.c:242: else if (currentThread == 1)
-      000152 74 01            [12]  461 	mov	a,#0x01
-      000154 B5 24 05         [24]  462 	cjne	a,_currentThread,00107$
+      000161 74 01            [12]  461 	mov	a,#0x01
+      000163 B5 24 05         [24]  462 	cjne	a,_currentThread,00107$
                                     463 ;	cooperative.c:244: candidateMask = 0x02;
-      000157 75 27 02         [24]  464 	mov	_candidateMask,#0x02
-      00015A 80 0D            [24]  465 	sjmp	00111$
-      00015C                        466 00107$:
+      000166 75 27 02         [24]  464 	mov	_candidateMask,#0x02
+      000169 80 0D            [24]  465 	sjmp	00111$
+      00016B                        466 00107$:
                                     467 ;	cooperative.c:246: else if (currentThread == 2)
-      00015C 74 02            [12]  468 	mov	a,#0x02
-      00015E B5 24 05         [24]  469 	cjne	a,_currentThread,00104$
+      00016B 74 02            [12]  468 	mov	a,#0x02
+      00016D B5 24 05         [24]  469 	cjne	a,_currentThread,00104$
                                     470 ;	cooperative.c:248: candidateMask = 0x04;
-      000161 75 27 04         [24]  471 	mov	_candidateMask,#0x04
-      000164 80 03            [24]  472 	sjmp	00111$
-      000166                        473 00104$:
+      000170 75 27 04         [24]  471 	mov	_candidateMask,#0x04
+      000173 80 03            [24]  472 	sjmp	00111$
+      000175                        473 00104$:
                                     474 ;	cooperative.c:252: candidateMask = 0x08;
-      000166 75 27 08         [24]  475 	mov	_candidateMask,#0x08
-      000169                        476 00111$:
+      000175 75 27 08         [24]  475 	mov	_candidateMask,#0x08
+      000178                        476 00111$:
                                     477 ;	cooperative.c:255: if (threadMask & candidateMask)
-      000169 E5 27            [12]  478 	mov	a,_candidateMask
-      00016B 55 25            [12]  479 	anl	a,_threadMask
-      00016D 60 CC            [24]  480 	jz	00114$
+      000178 E5 27            [12]  478 	mov	a,_candidateMask
+      00017A 55 25            [12]  479 	anl	a,_threadMask
+      00017C 60 CC            [24]  480 	jz	00114$
                                     481 ;	cooperative.c:260: RESTORESTATE;
-      00016F E5 24            [12]  482 	mov	a,_currentThread
-      000171 24 20            [12]  483 	add	a, #_savedSP
-      000173 F9               [12]  484 	mov	r1,a
-      000174 87 81            [24]  485 	mov	_SP,@r1
-      000176 D0 D0            [24]  486 	pop psw 
-      000178 D0 83            [24]  487 	pop dph 
-      00017A D0 82            [24]  488 	pop dpl 
-      00017C D0 F0            [24]  489 	pop b 
-      00017E D0 E0            [24]  490 	pop acc 
+      00017E E5 24            [12]  482 	mov	a,_currentThread
+      000180 24 20            [12]  483 	add	a, #_savedSP
+      000182 F9               [12]  484 	mov	r1,a
+      000183 87 81            [24]  485 	mov	_SP,@r1
+      000185 D0 D0            [24]  486 	pop psw 
+      000187 D0 83            [24]  487 	pop dph 
+      000189 D0 82            [24]  488 	pop dpl 
+      00018B D0 F0            [24]  489 	pop b 
+      00018D D0 E0            [24]  490 	pop acc 
                                     491 ;	cooperative.c:261: }
-      000180 22               [24]  492 	ret
+      00018F 22               [24]  492 	ret
                                     493 ;------------------------------------------------------------
                                     494 ;Allocation info for local variables in function 'ThreadExit'
                                     495 ;------------------------------------------------------------
@@ -497,90 +497,90 @@
                                     497 ;	-----------------------------------------
                                     498 ;	 function ThreadExit
                                     499 ;	-----------------------------------------
-      000181                        500 _ThreadExit:
+      000190                        500 _ThreadExit:
                                     501 ;	cooperative.c:276: if (currentThread == 0)
-      000181 E5 24            [12]  502 	mov	a,_currentThread
-      000183 70 05            [24]  503 	jnz	00108$
+      000190 E5 24            [12]  502 	mov	a,_currentThread
+      000192 70 05            [24]  503 	jnz	00108$
                                     504 ;	cooperative.c:278: threadMask &= 0xFE;
-      000185 53 25 FE         [24]  505 	anl	_threadMask,#0xfe
-      000188 80 17            [24]  506 	sjmp	00109$
-      00018A                        507 00108$:
+      000194 53 25 FE         [24]  505 	anl	_threadMask,#0xfe
+      000197 80 17            [24]  506 	sjmp	00109$
+      000199                        507 00108$:
                                     508 ;	cooperative.c:280: else if (currentThread == 1)
-      00018A 74 01            [12]  509 	mov	a,#0x01
-      00018C B5 24 05         [24]  510 	cjne	a,_currentThread,00105$
+      000199 74 01            [12]  509 	mov	a,#0x01
+      00019B B5 24 05         [24]  510 	cjne	a,_currentThread,00105$
                                     511 ;	cooperative.c:282: threadMask &= 0xFD;
-      00018F 53 25 FD         [24]  512 	anl	_threadMask,#0xfd
-      000192 80 0D            [24]  513 	sjmp	00109$
-      000194                        514 00105$:
+      00019E 53 25 FD         [24]  512 	anl	_threadMask,#0xfd
+      0001A1 80 0D            [24]  513 	sjmp	00109$
+      0001A3                        514 00105$:
                                     515 ;	cooperative.c:284: else if (currentThread == 2)
-      000194 74 02            [12]  516 	mov	a,#0x02
-      000196 B5 24 05         [24]  517 	cjne	a,_currentThread,00102$
+      0001A3 74 02            [12]  516 	mov	a,#0x02
+      0001A5 B5 24 05         [24]  517 	cjne	a,_currentThread,00102$
                                     518 ;	cooperative.c:286: threadMask &= 0xFB;
-      000199 53 25 FB         [24]  519 	anl	_threadMask,#0xfb
-      00019C 80 03            [24]  520 	sjmp	00109$
-      00019E                        521 00102$:
+      0001A8 53 25 FB         [24]  519 	anl	_threadMask,#0xfb
+      0001AB 80 03            [24]  520 	sjmp	00109$
+      0001AD                        521 00102$:
                                     522 ;	cooperative.c:290: threadMask &= 0xF7;
-      00019E 53 25 F7         [24]  523 	anl	_threadMask,#0xf7
-      0001A1                        524 00109$:
+      0001AD 53 25 F7         [24]  523 	anl	_threadMask,#0xf7
+      0001B0                        524 00109$:
                                     525 ;	cooperative.c:293: if (threadMask == 0)
-      0001A1 E5 25            [12]  526 	mov	a,_threadMask
-      0001A3 70 02            [24]  527 	jnz	00128$
+      0001B0 E5 25            [12]  526 	mov	a,_threadMask
+      0001B2 70 02            [24]  527 	jnz	00128$
                                     528 ;	cooperative.c:295: while (1)
-      0001A5                        529 00111$:
+      0001B4                        529 00111$:
                                     530 ;	cooperative.c:301: do
-      0001A5 80 FE            [24]  531 	sjmp	00111$
-      0001A7                        532 00128$:
+      0001B4 80 FE            [24]  531 	sjmp	00111$
+      0001B6                        532 00128$:
                                     533 ;	cooperative.c:303: currentThread++;
-      0001A7 E5 24            [12]  534 	mov	a,_currentThread
-      0001A9 04               [12]  535 	inc	a
-      0001AA F5 24            [12]  536 	mov	_currentThread,a
+      0001B6 E5 24            [12]  534 	mov	a,_currentThread
+      0001B8 04               [12]  535 	inc	a
+      0001B9 F5 24            [12]  536 	mov	_currentThread,a
                                     537 ;	cooperative.c:304: if (currentThread >= MAXTHREADS)
-      0001AC 74 FC            [12]  538 	mov	a,#0x100 - 0x04
-      0001AE 25 24            [12]  539 	add	a,_currentThread
-      0001B0 50 03            [24]  540 	jnc	00116$
+      0001BB 74 FC            [12]  538 	mov	a,#0x100 - 0x04
+      0001BD 25 24            [12]  539 	add	a,_currentThread
+      0001BF 50 03            [24]  540 	jnc	00116$
                                     541 ;	cooperative.c:306: currentThread = 0;
-      0001B2 75 24 00         [24]  542 	mov	_currentThread,#0x00
-      0001B5                        543 00116$:
+      0001C1 75 24 00         [24]  542 	mov	_currentThread,#0x00
+      0001C4                        543 00116$:
                                     544 ;	cooperative.c:309: if (currentThread == 0)
-      0001B5 E5 24            [12]  545 	mov	a,_currentThread
-      0001B7 70 05            [24]  546 	jnz	00124$
+      0001C4 E5 24            [12]  545 	mov	a,_currentThread
+      0001C6 70 05            [24]  546 	jnz	00124$
                                     547 ;	cooperative.c:311: candidateMask = 0x01;
-      0001B9 75 27 01         [24]  548 	mov	_candidateMask,#0x01
-      0001BC 80 17            [24]  549 	sjmp	00125$
-      0001BE                        550 00124$:
+      0001C8 75 27 01         [24]  548 	mov	_candidateMask,#0x01
+      0001CB 80 17            [24]  549 	sjmp	00125$
+      0001CD                        550 00124$:
                                     551 ;	cooperative.c:313: else if (currentThread == 1)
-      0001BE 74 01            [12]  552 	mov	a,#0x01
-      0001C0 B5 24 05         [24]  553 	cjne	a,_currentThread,00121$
+      0001CD 74 01            [12]  552 	mov	a,#0x01
+      0001CF B5 24 05         [24]  553 	cjne	a,_currentThread,00121$
                                     554 ;	cooperative.c:315: candidateMask = 0x02;
-      0001C3 75 27 02         [24]  555 	mov	_candidateMask,#0x02
-      0001C6 80 0D            [24]  556 	sjmp	00125$
-      0001C8                        557 00121$:
+      0001D2 75 27 02         [24]  555 	mov	_candidateMask,#0x02
+      0001D5 80 0D            [24]  556 	sjmp	00125$
+      0001D7                        557 00121$:
                                     558 ;	cooperative.c:317: else if (currentThread == 2)
-      0001C8 74 02            [12]  559 	mov	a,#0x02
-      0001CA B5 24 05         [24]  560 	cjne	a,_currentThread,00118$
+      0001D7 74 02            [12]  559 	mov	a,#0x02
+      0001D9 B5 24 05         [24]  560 	cjne	a,_currentThread,00118$
                                     561 ;	cooperative.c:319: candidateMask = 0x04;
-      0001CD 75 27 04         [24]  562 	mov	_candidateMask,#0x04
-      0001D0 80 03            [24]  563 	sjmp	00125$
-      0001D2                        564 00118$:
+      0001DC 75 27 04         [24]  562 	mov	_candidateMask,#0x04
+      0001DF 80 03            [24]  563 	sjmp	00125$
+      0001E1                        564 00118$:
                                     565 ;	cooperative.c:323: candidateMask = 0x08;
-      0001D2 75 27 08         [24]  566 	mov	_candidateMask,#0x08
-      0001D5                        567 00125$:
+      0001E1 75 27 08         [24]  566 	mov	_candidateMask,#0x08
+      0001E4                        567 00125$:
                                     568 ;	cooperative.c:326: if (threadMask & candidateMask)
-      0001D5 E5 27            [12]  569 	mov	a,_candidateMask
-      0001D7 55 25            [12]  570 	anl	a,_threadMask
-      0001D9 60 CC            [24]  571 	jz	00128$
+      0001E4 E5 27            [12]  569 	mov	a,_candidateMask
+      0001E6 55 25            [12]  570 	anl	a,_threadMask
+      0001E8 60 CC            [24]  571 	jz	00128$
                                     572 ;	cooperative.c:332: RESTORESTATE;
-      0001DB E5 24            [12]  573 	mov	a,_currentThread
-      0001DD 24 20            [12]  574 	add	a, #_savedSP
-      0001DF F9               [12]  575 	mov	r1,a
-      0001E0 87 81            [24]  576 	mov	_SP,@r1
-      0001E2 D0 D0            [24]  577 	pop psw 
-      0001E4 D0 83            [24]  578 	pop dph 
-      0001E6 D0 82            [24]  579 	pop dpl 
-      0001E8 D0 F0            [24]  580 	pop b 
-      0001EA D0 E0            [24]  581 	pop acc 
+      0001EA E5 24            [12]  573 	mov	a,_currentThread
+      0001EC 24 20            [12]  574 	add	a, #_savedSP
+      0001EE F9               [12]  575 	mov	r1,a
+      0001EF 87 81            [24]  576 	mov	_SP,@r1
+      0001F1 D0 D0            [24]  577 	pop psw 
+      0001F3 D0 83            [24]  578 	pop dph 
+      0001F5 D0 82            [24]  579 	pop dpl 
+      0001F7 D0 F0            [24]  580 	pop b 
+      0001F9 D0 E0            [24]  581 	pop acc 
                                     582 ;	cooperative.c:333: }
-      0001EC 22               [24]  583 	ret
+      0001FB 22               [24]  583 	ret
                                     584 	.area CSEG    (CODE)
                                     585 	.area CONST   (CODE)
                                     586 	.area XINIT   (CODE)
