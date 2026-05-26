@@ -1,28 +1,21 @@
 #
-# makefile for testing cooperative multithreading
-#
-# This assumes you have SDCC installed and this targets EdSim51.
-# The generated .hex file should be one that can be loaded and run
-# directly.
-#
-# Author: Pai Chou
-# CS 3423 Fall 2018
+# Makefile for Programming Project Checkpoint 2: preemptive multithreading
+# Target: SDCC + EdSim51
 #
 
 CC = sdcc
-CFLAGS = -c 
-LDFLAGS = 
-#--stack-after-data --stack-loc 0x39 --data-loc 0x20
+CFLAGS = -c
+LDFLAGS =
 
-C_OBJECTS = testcoop.rel cooperative.rel
+C_OBJECTS = testpreempt.rel preemptive.rel
 
-all: testcoop.hex
+all: testpreempt.hex
 
-testcoop.hex:   $(C_OBJECTS) $(ASM_OBJECTS)
-				$(CC) $(LDFLAGS) -o testcoop.hex $(C_OBJECTS)
+testpreempt.hex: $(C_OBJECTS)
+	$(CC) $(LDFLAGS) -o testpreempt.hex $(C_OBJECTS)
 
 clean:
-	rm *.hex *.ihx *.lnk *.lst *.map *.mem *.rel *.rst *.sym *.asm *.lk
+	rm -f *.hex *.ihx *.lnk *.lst *.map *.mem *.rel *.rst *.sym *.asm *.lk
 
-%.rel:  %.c    cooperative.h Makefile
+%.rel: %.c preemptive.h Makefile
 	$(CC) $(CFLAGS) $<
