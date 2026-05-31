@@ -1,11 +1,14 @@
 #include <8051.h>
 #include "preemptive.h"
 
-// Global Variables
-__data __at (0x30) char sharedChar;
-__data __at (0x31) char bufferFull;
-__data __at (0x32) char nextChar;
-__data __at (0x33) char consumedChar;
+__data __at (0x30) Semaphore mutex;
+__data __at (0x31) Semaphore full;
+__data __at (0x32) Semaphore empty;
+__data __at (0x33) char buffer[3];
+__data __at (0x36) char head;
+__data __at (0x37) char tail;
+__data __at (0x38) char nextChar;
+__data __at (0x39) char consumedChar;
 
 void Producer(void)
 {
@@ -13,15 +16,18 @@ void Producer(void)
 
     while (1)
     {
-        while (bufferFull)
+        SemaphoreWait(empty);
+        SemaphoreWait(mutex);
+
+        buffer[head] = nextChar;
+        head++;
+        if (head == 3)
         {
-            // Empty
+            head = 0;
         }
 
-        EA = 0;
-        sharedChar = nextChar;
-        bufferFull = 1;
-        EA = 1;
+        SemaphoreSignal(mutex);
+        SemaphoreSignal(full);
 
         nextChar++;
         if (nextChar > 'Z')
@@ -42,21 +48,23 @@ void Consumer(void)
 
     while (1)
     {
-        while (!bufferFull)
+        SemaphoreWait(full);
+        SemaphoreWait(mutex);
+
+        consumedChar = buffer[tail];
+        tail++;
+        if (tail == 3)
         {
-            // Empty
+            tail = 0;
         }
 
-        EA = 0;
-        consumedChar = sharedChar;
-        bufferFull = 0;
-        EA = 1;
+        SemaphoreSignal(mutex);
+        SemaphoreSignal(empty);
 
         TI = 0;
         SBUF = consumedChar;
         while (TI == 0)
         {
-            // Waiting
         }
         TI = 0;
     }
@@ -64,8 +72,15 @@ void Consumer(void)
 
 void main(void)
 {
-    sharedChar = ' ';
-    bufferFull = 0;
+    buffer[0] = ' ';
+    buffer[1] = ' ';
+    buffer[2] = ' ';
+    head = 0;
+    tail = 0;
+
+    SemaphoreCreate(mutex, 1);
+    SemaphoreCreate(full, 0);
+    SemaphoreCreate(empty, 3);
 
     ThreadCreate(Producer);
     Consumer();

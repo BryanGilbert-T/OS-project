@@ -1,7 +1,6 @@
 #include <8051.h>
 #include "preemptive.h"
 
-// Global Variables
 __data __at (0x20) unsigned char savedSP0;
 __data __at (0x21) unsigned char savedSP1;
 __data __at (0x22) unsigned char savedSP2;
@@ -93,7 +92,7 @@ void scheduler(void) __naked
         dec a
         jz SCHED_THREAD2
 
-        mov a, _threadMask     ; currentThread == 3
+        mov a, _threadMask
         anl a, #0x08
         jz SCHED_LOOP
         ret
@@ -121,23 +120,19 @@ void scheduler(void) __naked
 void Bootstrap(void)
 {
     EA = 0;
-
     threadMask = 0x00;
     currentThread = 0;
-
-    TMOD = 0x00;       
-    IE = 0x02;         
-    TR0 = 1;           
-
+    TMOD = 0x00;
+    IE = 0x02;
+    TR0 = 1;
     currentThread = ThreadCreate(main);
-
     RESTORESTATE;
     EA = 1;
 }
 
 ThreadID ThreadCreate(FunctionPtr fp)
 {
-    (void)fp;  
+    (void)fp;
 
     __asm
         mov _savedFpLow, dpl
@@ -152,6 +147,7 @@ ThreadID ThreadCreate(FunctionPtr fp)
     {
         savedEA = 0;
     }
+
     EA = 0;
 
     if ((threadMask & 0x01) == 0)
@@ -201,11 +197,11 @@ ThreadID ThreadCreate(FunctionPtr fp)
     __asm
         push _savedFpLow
         push _savedFpHigh
-        push _zeroValue       ; ACC
-        push _zeroValue       ; B
-        push _zeroValue       ; DPL
-        push _zeroValue       ; DPH
-        push _newThreadPSW    ; PSW selects register bank
+        push _zeroValue
+        push _zeroValue
+        push _zeroValue
+        push _zeroValue
+        push _newThreadPSW
     __endasm;
 
     if (candidateThread == 0)
@@ -271,7 +267,6 @@ void ThreadExit(void)
     {
         while (1)
         {
-            // Emptjjjy
         }
     }
 
